@@ -5,8 +5,8 @@ import random
 
 pygame.init()
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 1000
+SCREEN_HEIGHT = 800
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -35,14 +35,14 @@ player_velocity_y = 0
 is_jumping = False
 
 def generate_platforms():
-    platforms = [pygame.Rect(0, SCREEN_HEIGHT - 20, SCREEN_WIDTH, 20)] 
+    platforms = [pygame.Rect(0, SCREEN_HEIGHT - 20, SCREEN_WIDTH, 20)]  
     while len(platforms) < math.ceil(SCREEN_HEIGHT/player_height):
         x = random.randint(0, SCREEN_WIDTH - 200)
         y = random.randint(150, SCREEN_HEIGHT - 100)  
         new_platform = pygame.Rect(x, y, random.randint(100, 200), 20)
         if all(not new_platform.colliderect(p) for p in platforms):  
             platforms.append(new_platform)
-    return sorted(platforms, key=lambda p: p.top, reverse=True)  
+    return sorted(platforms, key=lambda p: p.top, reverse=True) 
 
 platforms = generate_platforms()
 message_displayed = False
@@ -59,6 +59,7 @@ def main():
     while running:
         screen.fill(BLACK)
 
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -68,11 +69,11 @@ def main():
                     pygame.quit()
                     sys.exit()
                 if message_displayed and event.key == pygame.K_r:
-                    player_x, player_y = random.randint(100, SCREEN_WIDTH - player_width), 980 - player_height 
+                    player_x, player_y = 100, SCREEN_HEIGHT - 20 - player_height
                     player_velocity_y = 0
                     is_jumping = False
                     message_displayed = False
-                    platforms = generate_platforms()  
+                    platforms = generate_platforms()
 
         keys = pygame.key.get_pressed()
         if not message_displayed:
@@ -101,21 +102,21 @@ def main():
             message_displayed = True
 
         if player_y > SCREEN_HEIGHT:
-            player_x, player_y = 100, 500  
+            player_x, player_y = 100, SCREEN_HEIGHT - 20 - player_height
             player_velocity_y = 0
             is_jumping = False
-            platforms = generate_platforms()  
+            platforms = generate_platforms()
 
         for platform in platforms:
             pygame.draw.rect(screen, GREEN, platform)
-        
+
         if not message_displayed:
-            pygame.draw.rect(screen,BLUE, (player_x, player_y, player_width, player_height))
+            pygame.draw.rect(screen, BLUE, (player_x, player_y, player_width, player_height))
 
         if message_displayed:
             draw_message("Congratulations! You reached the top!", RED)
             draw_message("Press 'R' to Reset", YELLOW, 50)
-        
+
         pygame.display.flip()
 
         clock.tick(FPS)
