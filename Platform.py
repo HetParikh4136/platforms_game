@@ -5,15 +5,21 @@ import random
 
 pygame.init()
 
-SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 800
+SCREEN_WIDTH = 920
+SCREEN_HEIGHT = 660
+
+background_img = pygame.image.load("background.png")
+player_img = pygame.image.load("player.png")
+platform_img = pygame.image.load("platform.png")
+
+player_img = pygame.transform.scale(player_img, (40, 60))
+platform_img = pygame.transform.scale(platform_img, (150, 30))
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 YELLOW = (255, 255, 0)
-BLUE = (0, 0, 255)
-GREEN = (0, 255, 0)
 RED = (255, 0, 0)
+BROWN = (189,69,19)
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Platformer Game")
@@ -35,17 +41,26 @@ player_velocity_y = 0
 is_jumping = False
 
 def generate_platforms():
-    platforms = [pygame.Rect(0, SCREEN_HEIGHT - 20, SCREEN_WIDTH, 20)]  
+    platforms = [pygame.Rect(0, SCREEN_HEIGHT - 20, SCREEN_WIDTH, 20)] 
     while len(platforms) < math.ceil(SCREEN_HEIGHT/player_height):
         x = random.randint(0, SCREEN_WIDTH - 200)
         y = random.randint(150, SCREEN_HEIGHT - 100)  
-        new_platform = pygame.Rect(x, y, random.randint(100, 200), 20)
+        new_platform = pygame.Rect(x, y, 150, 20)
         if all(not new_platform.colliderect(p) for p in platforms):  
             platforms.append(new_platform)
-    return sorted(platforms, key=lambda p: p.top, reverse=True) 
+    return sorted(platforms, key=lambda p: p.top, reverse=True)  
 
 platforms = generate_platforms()
+
 message_displayed = False
+
+def draw_message_bg(text, color, y_offset=0):
+    overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)  
+    overlay.fill((0, 0, 0, 180)) 
+    screen.blit(overlay, (0, 0))
+    message = font.render(text, True, color)
+    text_rect = message.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + y_offset))
+    screen.blit(message, text_rect)
 
 def draw_message(text, color, y_offset=0):
     message = font.render(text, True, color)
@@ -57,8 +72,7 @@ def main():
 
     running = True
     while running:
-        screen.fill(BLACK)
-
+        screen.blit(background_img, (0, 0))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -69,12 +83,12 @@ def main():
                     pygame.quit()
                     sys.exit()
                 if message_displayed and event.key == pygame.K_r:
-                    player_x, player_y = 100, SCREEN_HEIGHT - 20 - player_height
+                    player_x, player_y = 100, SCREEN_HEIGHT - 20 - player_height  
                     player_velocity_y = 0
                     is_jumping = False
                     message_displayed = False
-                    platforms = generate_platforms()
-
+                    platforms = generate_platforms() 
+                     
         keys = pygame.key.get_pressed()
         if not message_displayed:
             if keys[pygame.K_LEFT]:
@@ -107,15 +121,17 @@ def main():
             is_jumping = False
             platforms = generate_platforms()
 
+        pygame.draw.rect(screen, BROWN, (0, SCREEN_HEIGHT - 20, SCREEN_WIDTH, 20)) 
+
         for platform in platforms:
-            pygame.draw.rect(screen, GREEN, platform)
+            screen.blit(platform_img, (platform.x, platform.y))
 
         if not message_displayed:
-            pygame.draw.rect(screen, BLUE, (player_x, player_y, player_width, player_height))
-
+            screen.blit(player_img, (player_x, player_y))
+        
         if message_displayed:
-            draw_message("Congratulations! You reached the top!", RED)
-            draw_message("Press 'R' to Reset", YELLOW, 50)
+            draw_message_bg("Press 'R' to Reset", YELLOW, 50)
+            draw_message("Congratulations! You reached the top!", RED, 0)
 
         pygame.display.flip()
 
